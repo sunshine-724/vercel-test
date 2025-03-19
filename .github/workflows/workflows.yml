@@ -1,0 +1,34 @@
+name: Github Auto Deploy
+
+#push時発火する
+on: push
+
+#Vercelにログインする際に必要な環境変数
+#(GithubのプロジェクトのSettingで設定した環境変数が読み取られる)
+env:
+  VERCEL_ORG_ID: ${{ secrets.ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.PROJECT_ID }}
+
+jobs:
+  deploy:
+    #ランナーの設定
+    runs-on: ubuntu-latest
+    steps:
+        #最新のコードをチェックアウトする
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+        #ランナーにインストールする内容を記述
+        #これはVercel CLIのインストール
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+        #以下環境変数を用いたVercelでのビルド、デプロイコマンド
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
